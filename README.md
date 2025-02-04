@@ -2,6 +2,11 @@
 
 _Tool for encrypting/decrypting messages using a custom letter-shift algorithm. Input a message and a shift value (1-144), then hit "Encrypt." Enjoy the encrypting animations!_
 
+<video width="320" height="240" autoplay loop muted>
+  <source src="./Movie/CipherEncrypt.mp4" type="video/mp4">
+  <p>Your browser does not support the video tag.</p>
+</video>
+
 ## Summary:
 
 HTML, CSS and JavaScript Practice with:
