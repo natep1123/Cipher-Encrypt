@@ -1,70 +1,55 @@
-//File to manage the title animation
+// File to manage the title animation
 
 export function animateTitle() {
-  // Lowercase and Uppercase alphabets as strings
+  // Alphabets for shifting
   const lowercase = "abcdefghijklmnopqrstuvwxyz";
   const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  let shiftValue = 1; //Initial shift value
-
-  // Select the title element and store the original title
+  // Initial setup
   const title = document.querySelector("h1");
-  const staticOriginalTitle = title.textContent;
-  let currentTitle = staticOriginalTitle; // Dynamic copy for animations
+  const originalTitle = title.textContent;
+  let shiftValue = 1; // Start at 1, up to 12
+  let index = 0; // Track current character
+  let lastFrame = performance.now(); // For throttling
 
-  let index = 0; //Index to keep track of the current character
-
-  //Function to shift a letter up the alphabet
+  // Shift a letter up the alphabet
   function shiftLetter(char) {
-    let alphabet = ""; //Variable to store the alphabet
-
-    //Check if the character is lowercase, uppercase, or neither
-    if (lowercase.includes(char)) {
-      alphabet = lowercase;
-    } else if (uppercase.includes(char)) {
-      alphabet = uppercase;
-    } else {
-      return char; //Return the character if it is not in the alphabet
-    }
-
-    const index = alphabet.indexOf(char); //Find the index of the character in the alphabet
-    const newIndex = (index + shiftValue) % alphabet.length; //Shift the index by the shift value
-    return alphabet[newIndex]; //Return the new character
+    const alphabet = lowercase.includes(char)
+      ? lowercase
+      : uppercase.includes(char)
+      ? uppercase
+      : null;
+    if (!alphabet) return char; // Return unchanged if not a letter
+    const currentIndex = alphabet.indexOf(char);
+    const newIndex = (currentIndex + shiftValue) % alphabet.length;
+    return alphabet[newIndex];
   }
 
-  //Function to animate title letter by letter
-  function updateTitle() {
-    //The "i<=index" condition ensures that only the characters up to the current index are shifted each iteration (to create the animation effect)
-    let updatedTitle = currentTitle
-      .split("")
-      .map((char, i) => (i <= index ? shiftLetter(char) : char))
-      .join("");
-    title.textContent = updatedTitle; //Update the title with the new characters
-    index++; //Increment the index
+  // Animate title letter by letter
+  function updateTitle(timestamp) {
+    const deltaTime = timestamp - lastFrame;
+    if (deltaTime > 100) {
+      // Throttle to ~100ms per update (similar to original)
+      let updatedTitle = originalTitle
+        .split("")
+        .map((char, i) => (i <= index ? shiftLetter(char) : char))
+        .join("");
+      title.textContent = updatedTitle; // Update DOM
 
-    //Repeat animation until all characters are shifted
-    if (index < staticOriginalTitle.length) {
-      setTimeout(() => {
-        updateTitle();
-      }, 100); //Delay in ms
-    } else {
-      //Reset index and animate title again
-      index = 0;
-      //TIP: the 12th iteration of the loop returns the original title
-      //Modify the shift value for the next animation, or reset to 1
-      if (shiftValue < 12) {
-        shiftValue++;
+      index++;
+      if (index < originalTitle.length) {
+        requestAnimationFrame(updateTitle); // Next letter
       } else {
-        shiftValue = 1;
+        index = 0; // Reset for next cycle
+        shiftValue = shiftValue < 12 ? shiftValue + 1 : 1; // Increment or reset shift
+        requestAnimationFrame(updateTitle); // Restart cycle
       }
-
-      currentTitle = updatedTitle; //Update the current title
-
-      //Repeat the animation
-      setTimeout(() => {
-        updateTitle();
-      }, 100); //Delay in ms
+      lastFrame = timestamp; // Update last frame time
+    } else {
+      requestAnimationFrame(updateTitle); // Wait for next frame
     }
-  } //End of updateTitle function
-  updateTitle(); //Start the animation
-} //End of animateTitle function
+  }
+
+  // Start animation
+  requestAnimationFrame(updateTitle);
+}
